@@ -2,6 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   Accordion,
+  AccordionControl,
+  AccordionItem,
+  AccordionPanel,
   Alert,
   Anchor,
   Badge,
@@ -269,8 +272,8 @@ export default async function AdminPage({
                 </Group>
                 <Accordion variant="separated">
                   {apps.map((app) => (
-                    <Accordion.Item value={app.id} key={app.id}>
-                      <Accordion.Control>
+                    <AccordionItem value={app.id} key={app.id}>
+                      <AccordionControl>
                         <Group gap="sm" wrap="nowrap">
                           <AppIcon name={app.name} src={app.iconImageUrl} size={34} />
                           <div>
@@ -280,8 +283,8 @@ export default async function AdminPage({
                             </Text>
                           </div>
                         </Group>
-                      </Accordion.Control>
-                      <Accordion.Panel>
+                      </AccordionControl>
+                      <AccordionPanel>
                         <Box
                           component="form"
                           action={`${basePath}/apps`}
@@ -298,8 +301,8 @@ export default async function AdminPage({
                             </Group>
                           </Stack>
                         </Box>
-                      </Accordion.Panel>
-                    </Accordion.Item>
+                      </AccordionPanel>
+                    </AccordionItem>
                   ))}
                 </Accordion>
               </Stack>

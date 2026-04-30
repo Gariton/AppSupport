@@ -6,7 +6,10 @@ export type AppRecord = {
   appStoreUrl: string;
   supportEmail: string;
   description: string;
+  hasInAppPurchases: boolean;
+  supportedLanguages: string[];
   iconImageUrl: string;
+  screenshots: string[];
   createdAt: string;
   updatedAt: string;
 };

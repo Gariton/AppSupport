@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { appendStatusParam, safeAdminReturnTo } from "@/lib/admin-redirect";
 import { adminPath, isAdminSlug } from "@/lib/admin-path";
 import { redirectTo } from "@/lib/http";
-import { savePolicy } from "@/lib/store";
+import { saveAppScreenshots } from "@/lib/store";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -19,18 +19,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const form = await request.formData();
   const returnTo = safeAdminReturnTo(form.get("returnTo"), basePath);
   const appId = String(form.get("appId") || "");
-  const locale = String(form.get("locale") || "");
-  const file = form.get("policyFile");
+  const files = form
+    .getAll("screenshotFiles")
+    .filter((file): file is File => file instanceof File && file.size > 0);
 
-  if (!(file instanceof File) || !file.name.endsWith(".md")) {
-    return redirectTo(appendStatusParam(returnTo, "policyError", "1"));
+  if (files.length === 0 || files.length > 10) {
+    return redirectTo(appendStatusParam(returnTo, "screenshotError", "1"));
   }
 
   try {
-    await savePolicy(appId, locale, file.name, await file.text());
+    await saveAppScreenshots(appId, files, { replace: form.get("replace") === "1" });
   } catch {
-    return redirectTo(appendStatusParam(returnTo, "policyError", "1"));
+    return redirectTo(appendStatusParam(returnTo, "screenshotError", "1"));
   }
 
-  return redirectTo(appendStatusParam(returnTo, "saved", "policy"));
+  return redirectTo(appendStatusParam(returnTo, "saved", "screenshots"));
 }

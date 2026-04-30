@@ -7,6 +7,7 @@ import {
   Group,
   Paper,
   SimpleGrid,
+  Spoiler,
   Stack,
   Text,
   ThemeIcon,
@@ -119,10 +120,15 @@ export default async function Home() {
                   <Card withBorder shadow="sm" p="lg" key={app.id} className="soft-card">
                     <Stack justify="space-between" mih={230} gap="lg">
                       <Stack gap="sm">
-                        <Group justify="space-between">
-                          <Badge color="gray" variant="light" leftSection={<IconBrandApple size={13} />}>
-                            iOS
-                          </Badge>
+                        <Group justify="space-between" gap="xs">
+                          <Group gap={6}>
+                            <Badge color="gray" variant="light" leftSection={<IconBrandApple size={13} />}>
+                              iOS
+                            </Badge>
+                            <Badge color={app.hasInAppPurchases ? "teal" : "gray"} variant="light">
+                              IAP {app.hasInAppPurchases ? "あり" : "なし"}
+                            </Badge>
+                          </Group>
                           <Text size="xs" c="dimmed">
                             {appPolicies.length} policies
                           </Text>
@@ -133,10 +139,17 @@ export default async function Home() {
                             {app.name}
                           </Title>
                         </Group>
-                        <Box
-                          className="app-description app-card-description"
-                          dangerouslySetInnerHTML={{ __html: markdownToHtml(app.description) }}
-                        />
+                        {app.supportedLanguages.length > 0 && (
+                          <Text size="xs" c="dimmed">
+                            対応言語: {app.supportedLanguages.join(" / ")}
+                          </Text>
+                        )}
+                        <Spoiler maxHeight={86} showLabel="続きを読む" hideLabel="閉じる" className="app-description-spoiler">
+                          <Box
+                            className="app-description app-card-description"
+                            dangerouslySetInnerHTML={{ __html: markdownToHtml(app.description) }}
+                          />
+                        </Spoiler>
                       </Stack>
                       <Stack gap="sm">
                         <Text size="sm" c="dimmed">

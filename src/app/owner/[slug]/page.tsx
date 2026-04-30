@@ -1,10 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import {
-  Accordion,
-  AccordionControl,
-  AccordionItem,
-  AccordionPanel,
   Alert,
   Anchor,
   Badge,
@@ -12,8 +8,6 @@ import {
   Button,
   Container,
   Group,
-  InputWrapper,
-  NativeSelect,
   Paper,
   SimpleGrid,
   Stack,
@@ -25,14 +19,12 @@ import {
   TableThead,
   TableTr,
   Text,
-  TextInput,
-  Textarea,
   ThemeIcon,
   Title
 } from "@mantine/core";
 import {
   IconApps,
-  IconDeviceFloppy,
+  IconCamera,
   IconEdit,
   IconExternalLink,
   IconFileUpload,
@@ -44,8 +36,8 @@ import {
 import { isAdmin } from "@/lib/auth";
 import { adminPath, isAdminSlug } from "@/lib/admin-path";
 import { listApps, listContacts, listPolicies } from "@/lib/store";
-import type { AppRecord } from "@/lib/types";
 import { AppIcon } from "@/components/AppIcon";
+import { AppFormFields } from "@/components/AppFormFields";
 
 export const dynamic = "force-dynamic";
 
@@ -74,10 +66,6 @@ export default async function AdminPage({
     listContacts()
   ]);
   const appById = new Map(apps.map((app) => [app.id, app]));
-  const appOptions = [
-    { label: "選択してください", value: "", disabled: true },
-    ...apps.map((app) => ({ label: app.name, value: app.id }))
-  ];
 
   return (
     <Box component="main" className="page-section">
@@ -102,9 +90,14 @@ export default async function AdminPage({
             </Box>
           </Group>
 
-          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
+          <SimpleGrid cols={{ base: 1, sm: 4 }} spacing="md">
             <MetricCard label="Apps" value={apps.length} icon={<IconApps size={24} />} />
             <MetricCard label="Policies" value={policies.length} icon={<IconFileUpload size={24} />} />
+            <MetricCard
+              label="Screenshots"
+              value={apps.reduce((sum, app) => sum + app.screenshots.length, 0)}
+              icon={<IconCamera size={24} />}
+            />
             <MetricCard label="Contacts" value={contacts.length} icon={<IconInbox size={24} />} />
           </SimpleGrid>
 
@@ -120,66 +113,35 @@ export default async function AdminPage({
             </Alert>
           )}
 
-          <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="md">
-            <Paper
-              component="form"
-              action={`${basePath}/apps`}
-              method="post"
-              encType="multipart/form-data"
-              p="xl"
-              className="soft-card"
-            >
-              <Stack gap="md">
-                <Group gap="sm">
-                  <ThemeIcon color="teal" variant="light">
-                    <IconPlus size={18} />
-                  </ThemeIcon>
-                  <Title order={2} size="h3">
-                    アプリ登録
-                  </Title>
-                </Group>
-                <AppFormFields />
-                <Group justify="flex-end">
-                  <Button type="submit" leftSection={<IconPlus size={17} />}>
-                    登録
-                  </Button>
-                </Group>
-              </Stack>
-            </Paper>
-
-            <Paper
-              component="form"
-              action={`${basePath}/policies`}
-              method="post"
-              encType="multipart/form-data"
-              p="xl"
-              className="soft-card"
-            >
-              <Stack gap="md">
-                <Group gap="sm">
-                  <ThemeIcon color="teal" variant="light">
-                    <IconFileUpload size={18} />
-                  </ThemeIcon>
-                  <Title order={2} size="h3">
-                    プライバシーポリシー
-                  </Title>
-                </Group>
-                <NativeSelect name="appId" label="アプリ" required defaultValue="" data={appOptions} />
-                <TextInput name="locale" label="ロケール" required placeholder="ja, en, zh-cn" />
-                <InputWrapper label="Markdown ファイル" required>
-                  <input name="policyFile" type="file" accept=".md,text/markdown,text/plain" required className="file-input" />
-                </InputWrapper>
-                <Text size="sm" c="dimmed">
-                  ロケールごとに md ファイルをアップロードすると、公開ページで言語切替できます。
-                </Text>
-                <Group justify="flex-end">
-                  <Button type="submit" leftSection={<IconFileUpload size={17} />}>
-                    アップロード
-                  </Button>
-                </Group>
-              </Stack>
-            </Paper>
-          </SimpleGrid>
+          <Paper
+            component="form"
+            action={`${basePath}/apps`}
+            method="post"
+            encType="multipart/form-data"
+            p="xl"
+            className="soft-card"
+          >
+            <Stack gap="md">
+              <Group gap="sm">
+                <ThemeIcon color="teal" variant="light">
+                  <IconPlus size={18} />
+                </ThemeIcon>
+                <Title order={2} size="h3">
+                  アプリ登録
+                </Title>
+              </Group>
+              <Text c="dimmed" size="sm">
+                登録後、一覧の編集画面からプライバシーポリシーとスクリーンショットを追加できます。
+              </Text>
+              <input type="hidden" name="returnTo" value={basePath} />
+              <AppFormFields />
+              <Group justify="flex-end">
+                <Button type="submit" leftSection={<IconPlus size={17} />}>
+                  登録
+                </Button>
+              </Group>
+            </Stack>
+          </Paper>
 
           <Paper p="xl" className="soft-card">
             <Group justify="space-between" mb="md">
@@ -192,13 +154,17 @@ export default async function AdminPage({
                 </Text>
               </div>
             </Group>
-            <TableScrollContainer minWidth={760}>
+            <TableScrollContainer minWidth={1080}>
               <Table striped highlightOnHover verticalSpacing="md">
                 <TableThead>
                   <TableTr>
                     <TableTh>アプリ</TableTh>
+                    <TableTh>課金</TableTh>
+                    <TableTh>対応言語</TableTh>
                     <TableTh>Support URL</TableTh>
                     <TableTh>ポリシー</TableTh>
+                    <TableTh>スクリーンショット</TableTh>
+                    <TableTh>操作</TableTh>
                   </TableTr>
                 </TableThead>
                 <TableTbody>
@@ -216,6 +182,16 @@ export default async function AdminPage({
                               </Text>
                             </div>
                           </Group>
+                        </TableTd>
+                        <TableTd>
+                          <Badge color={app.hasInAppPurchases ? "teal" : "gray"} variant="light">
+                            {app.hasInAppPurchases ? "あり" : "なし"}
+                          </Badge>
+                        </TableTd>
+                        <TableTd>
+                          <Text size="sm" c={app.supportedLanguages.length > 0 ? undefined : "dimmed"}>
+                            {app.supportedLanguages.join(" / ") || "未設定"}
+                          </Text>
                         </TableTd>
                         <TableTd>
                           <Anchor href={`/apps/${app.slug}`} c="teal" fw={700}>
@@ -242,12 +218,27 @@ export default async function AdminPage({
                             )}
                           </Group>
                         </TableTd>
+                        <TableTd>
+                          <Badge color={app.screenshots.length > 0 ? "teal" : "gray"} variant="light">
+                            {app.screenshots.length} 枚
+                          </Badge>
+                        </TableTd>
+                        <TableTd>
+                          <Button
+                            component="a"
+                            href={`${basePath}/apps/${app.id}`}
+                            variant="default"
+                            leftSection={<IconEdit size={16} />}
+                          >
+                            編集
+                          </Button>
+                        </TableTd>
                       </TableTr>
                     );
                   })}
                   {apps.length === 0 && (
                     <TableTr>
-                      <TableTd colSpan={3}>
+                      <TableTd colSpan={7}>
                         <Text c="dimmed">まだアプリは登録されていません。</Text>
                       </TableTd>
                     </TableTr>
@@ -255,58 +246,6 @@ export default async function AdminPage({
                 </TableTbody>
               </Table>
             </TableScrollContainer>
-            {apps.length > 0 && (
-              <Stack mt="xl" gap="md">
-                <Group gap="sm">
-                  <ThemeIcon color="teal" variant="light">
-                    <IconEdit size={18} />
-                  </ThemeIcon>
-                  <div>
-                    <Title order={3} size="h4">
-                      アプリ情報の編集
-                    </Title>
-                    <Text c="dimmed" size="sm">
-                      変更したいアプリを開いて、内容を更新できます。
-                    </Text>
-                  </div>
-                </Group>
-                <Accordion variant="separated">
-                  {apps.map((app) => (
-                    <AccordionItem value={app.id} key={app.id}>
-                      <AccordionControl>
-                        <Group gap="sm" wrap="nowrap">
-                          <AppIcon name={app.name} src={app.iconImageUrl} size={34} />
-                          <div>
-                            <Text fw={800}>{app.name}</Text>
-                            <Text c="dimmed" size="xs">
-                              /apps/{app.slug}
-                            </Text>
-                          </div>
-                        </Group>
-                      </AccordionControl>
-                      <AccordionPanel>
-                        <Box
-                          component="form"
-                          action={`${basePath}/apps`}
-                          method="post"
-                          encType="multipart/form-data"
-                        >
-                          <Stack gap="md">
-                            <input type="hidden" name="id" value={app.id} />
-                            <AppFormFields app={app} />
-                            <Group justify="flex-end">
-                              <Button type="submit" leftSection={<IconDeviceFloppy size={17} />}>
-                                更新
-                              </Button>
-                            </Group>
-                          </Stack>
-                        </Box>
-                      </AccordionPanel>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </Stack>
-            )}
           </Paper>
 
           <Paper p="xl" className="soft-card">
@@ -361,46 +300,6 @@ export default async function AdminPage({
         </Stack>
       </Container>
     </Box>
-  );
-}
-
-function AppFormFields({ app }: { app?: AppRecord }) {
-  return (
-    <>
-      <TextInput name="name" label="アプリ名" required placeholder="My iOS App" defaultValue={app?.name} />
-      <TextInput name="slug" label="URL スラッグ" required placeholder="my-ios-app" defaultValue={app?.slug} />
-      <TextInput
-        name="appStoreUrl"
-        label="App Store URL"
-        type="url"
-        placeholder="https://apps.apple.com/..."
-        defaultValue={app?.appStoreUrl}
-      />
-      <InputWrapper label={app?.iconImageUrl ? "アイコン画像を変更" : "アイコン画像"}>
-        <input name="iconFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="file-input" />
-      </InputWrapper>
-      <Text size="sm" c="dimmed">
-        PNG、JPEG、WebP、GIF に対応しています。ファイルサイズは 2MB 以下にしてください。
-        {app?.iconImageUrl ? " 新しい画像を選択しない場合、現在のアイコンを維持します。" : ""}
-      </Text>
-      <TextInput
-        name="supportEmail"
-        label="サポートメール"
-        type="email"
-        required
-        placeholder="support@example.com"
-        defaultValue={app?.supportEmail}
-      />
-      <Textarea
-        name="description"
-        label="説明（Markdown）"
-        minRows={5}
-        autosize
-        required
-        placeholder="**太字**、箇条書き、リンクなどを利用できます。"
-        defaultValue={app?.description}
-      />
-    </>
   );
 }
 

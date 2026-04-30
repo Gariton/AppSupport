@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { requireAdmin } from "@/lib/auth";
+import { appendStatusParam, safeAdminReturnTo } from "@/lib/admin-redirect";
 import { adminPath, isAdminSlug } from "@/lib/admin-path";
 import { redirectTo } from "@/lib/http";
 import { saveApp, saveAppIcon } from "@/lib/store";
@@ -16,6 +17,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const form = await request.formData();
+  const returnTo = safeAdminReturnTo(form.get("returnTo"), basePath);
 
   try {
     const iconFile = form.get("iconFile");
@@ -28,11 +30,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       appStoreUrl: String(form.get("appStoreUrl") || "").trim(),
       supportEmail: String(form.get("supportEmail") || "").trim(),
       description: String(form.get("description") || "").trim(),
+      hasInAppPurchases: form.get("hasInAppPurchases") === "1",
+      supportedLanguages: String(form.get("supportedLanguages") || "").split(","),
       iconImageUrl
     });
   } catch {
-    return redirectTo(`${basePath}?appError=1`);
+    return redirectTo(appendStatusParam(returnTo, "appError", "1"));
   }
 
-  return redirectTo(basePath);
+  return redirectTo(appendStatusParam(returnTo, "saved", "app"));
 }

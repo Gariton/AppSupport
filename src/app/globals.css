@@ -14,9 +14,7 @@ body {
 
 .app-shell {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(20, 184, 166, 0.11), transparent 34%),
-    linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
+  background: linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
 }
 
 .topbar {
@@ -26,6 +24,10 @@ body {
   border-bottom: 1px solid rgba(15, 23, 42, 0.08);
   background: rgba(255, 255, 255, 0.84);
   backdrop-filter: blur(14px);
+}
+
+.topbar a {
+  min-width: 0;
 }
 
 .page-section {
@@ -96,8 +98,6 @@ body {
 }
 
 .app-card-description {
-  max-height: 5.1em;
-  overflow: hidden;
   font-size: var(--mantine-font-size-sm);
 }
 
@@ -112,6 +112,11 @@ body {
 
 .app-detail-description {
   font-size: var(--mantine-font-size-lg);
+}
+
+.app-description-spoiler button {
+  color: var(--mantine-color-teal-7);
+  font-weight: 700;
 }
 
 .policy-content {
@@ -151,6 +156,48 @@ body {
   color: var(--mantine-color-teal-7);
 }
 
+.screenshot-carousel {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 4px;
+  scroll-snap-type: x mandatory;
+  padding: 4px 4px 16px;
+}
+
+.screenshot-frame {
+  flex: 0 0 min(78vw, 320px);
+  aspect-ratio: 9 / 19.5;
+  scroll-snap-align: start;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 24px;
+  background: var(--mantine-color-white);
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.13);
+}
+
+.screenshot-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.screenshot-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-screenshot-carousel {
+  gap: 14px;
+}
+
+.admin-screenshot-frame {
+  flex-basis: 190px;
+  border-radius: 18px;
+}
+
 .file-input {
   width: 100%;
   border: 1px solid var(--mantine-color-gray-4);
@@ -171,13 +218,73 @@ body {
   font-weight: 700;
 }
 
+html[data-mantine-color-scheme="dark"] body {
+  background: #0c1118;
+}
+
+html[data-mantine-color-scheme="dark"] .app-shell {
+  background: linear-gradient(180deg, #111821 0%, #0c1118 100%);
+}
+
+html[data-mantine-color-scheme="dark"] .topbar {
+  border-bottom-color: rgba(255, 255, 255, 0.09);
+  background: rgba(12, 17, 24, 0.86);
+}
+
+html[data-mantine-color-scheme="dark"] .hero-band {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.16), rgba(59, 130, 246, 0.1)),
+    rgba(17, 24, 39, 0.72);
+}
+
+html[data-mantine-color-scheme="dark"] .soft-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+}
+
+html[data-mantine-color-scheme="dark"] .app-icon-image,
+html[data-mantine-color-scheme="dark"] .screenshot-frame {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+}
+
+html[data-mantine-color-scheme="dark"] .app-description :where(h1, h2, h3) {
+  color: var(--mantine-color-gray-0);
+}
+
+html[data-mantine-color-scheme="dark"] .app-description a,
+html[data-mantine-color-scheme="dark"] .policy-content a,
+html[data-mantine-color-scheme="dark"] .app-description-spoiler button {
+  color: var(--mantine-color-teal-4);
+}
+
+html[data-mantine-color-scheme="dark"] .screenshot-frame {
+  background: var(--mantine-color-dark-7);
+}
+
+html[data-mantine-color-scheme="dark"] .file-input {
+  border-color: var(--mantine-color-dark-4);
+  background: var(--mantine-color-dark-6);
+  color: var(--mantine-color-gray-0);
+}
+
+html[data-mantine-color-scheme="dark"] .file-input::file-selector-button {
+  background: var(--mantine-color-teal-5);
+  color: var(--mantine-color-dark-9);
+}
+
+html[data-mantine-color-scheme="dark"] .screenshot-carousel {
+  scrollbar-color: var(--mantine-color-dark-4) transparent;
+}
+
 @media (max-width: 48em) {
   .page-section {
     padding: 28px 0 44px;
   }
 
-  .topbar nav {
-    width: 100%;
+  .topbar [aria-label="Primary navigation"] {
+    max-width: calc(100vw - 112px);
     justify-content: flex-start;
     overflow-x: auto;
     padding-bottom: 2px;

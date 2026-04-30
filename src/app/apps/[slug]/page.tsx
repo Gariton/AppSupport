@@ -6,14 +6,15 @@ import {
   Button,
   Container,
   Group,
+  Image,
   Paper,
-  SimpleGrid,
+  Spoiler,
   Stack,
   Text,
   ThemeIcon,
   Title
 } from "@mantine/core";
-import { IconBrandApple, IconExternalLink, IconFileText, IconMail, IconShieldCheck } from "@tabler/icons-react";
+import { IconBrandApple, IconCamera, IconExternalLink, IconFileText, IconMail, IconShieldCheck } from "@tabler/icons-react";
 import { AppIcon } from "@/components/AppIcon";
 import { markdownToHtml } from "@/lib/markdown";
 import { getAppBySlug, listPolicies } from "@/lib/store";
@@ -29,8 +30,8 @@ export default async function AppSupportPage({ params }: { params: Promise<{ slu
   return (
     <Box component="main" className="page-section">
       <Container size="lg">
-        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
-          <Stack gap="lg" justify="center">
+        <Stack gap="xl">
+          <Stack gap="lg">
             <Badge color="teal" variant="light" w="fit-content" leftSection={<IconBrandApple size={14} />}>
               Support
             </Badge>
@@ -40,11 +41,19 @@ export default async function AppSupportPage({ params }: { params: Promise<{ slu
                 {app.name}
               </Title>
             </Group>
-            <Box
-              maw={680}
-              className="app-description app-detail-description"
-              dangerouslySetInnerHTML={{ __html: markdownToHtml(app.description) }}
-            />
+            <Group gap="xs">
+              <Badge color="gray" variant="light" leftSection={<IconBrandApple size={13} />}>
+                iOS
+              </Badge>
+              <Badge color={app.hasInAppPurchases ? "teal" : "gray"} variant="light">
+                アプリ内課金{app.hasInAppPurchases ? "あり" : "なし"}
+              </Badge>
+              {app.supportedLanguages.map((language) => (
+                <Badge key={language} color="blue" variant="light">
+                  {language}
+                </Badge>
+              ))}
+            </Group>
             <Group gap="sm">
               <Button component="a" href={`/contact?app=${app.id}`} leftSection={<IconMail size={18} />}>
                 お問い合わせ
@@ -62,6 +71,41 @@ export default async function AppSupportPage({ params }: { params: Promise<{ slu
               )}
             </Group>
           </Stack>
+
+          {app.screenshots.length > 0 && (
+            <Stack gap="md">
+              <Group gap="sm">
+                <ThemeIcon color="teal" variant="light">
+                  <IconCamera size={18} />
+                </ThemeIcon>
+                <Title order={2} size="h3">
+                  Screenshots
+                </Title>
+              </Group>
+              <Box className="screenshot-carousel" aria-label={`${app.name} screenshots`}>
+                {app.screenshots.map((screenshot, index) => (
+                  <Box className="screenshot-frame" key={screenshot}>
+                    <Image src={screenshot} alt={`${app.name} screenshot ${index + 1}`} className="screenshot-image" />
+                  </Box>
+                ))}
+              </Box>
+            </Stack>
+          )}
+
+          <Paper p="xl" className="soft-card">
+            <Stack gap="md">
+              <Title order={2} size="h3">
+                説明
+              </Title>
+              <Spoiler maxHeight={260} showLabel="続きを読む" hideLabel="閉じる" className="app-description-spoiler">
+                <Box
+                  maw={760}
+                  className="app-description app-detail-description"
+                  dangerouslySetInnerHTML={{ __html: markdownToHtml(app.description) }}
+                />
+              </Spoiler>
+            </Stack>
+          </Paper>
 
           <Paper p="xl" className="soft-card">
             <Stack gap="lg">
@@ -103,7 +147,7 @@ export default async function AppSupportPage({ params }: { params: Promise<{ slu
               </Paper>
             </Stack>
           </Paper>
-        </SimpleGrid>
+        </Stack>
       </Container>
     </Box>
   );

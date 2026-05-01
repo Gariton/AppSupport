@@ -27,6 +27,8 @@ docker compose up --build
 
 `.env` の `ADMIN_USERNAME`、`ADMIN_PASSWORD`、`ADMIN_SLUG`、`AUTH_SECRET` は本番公開前に必ず変更してください。HTTPS 環境で運用する場合は `AUTH_COOKIE_SECURE=true` にしてください。HTTP のローカル確認では `false` のままにします。
 
+AdMob の app-ads.txt を公開する場合は、`.env` の `ADMOB_PUBLISHER_ID` に AdMob のサイト運営者 ID（例: `pub-0000000000000000`）を設定してください。設定後、`/app-ads.txt` で `google.com, {ADMOB_PUBLISHER_ID}, DIRECT, f08c47fec0942fa0` が配信されます。未設定の場合は `/app-ads.txt` は 404 を返します。
+
 ## Markdown ファイル
 
 管理ページから、対象アプリ、ロケール、`.md` ファイルを指定してアップロードします。

@@ -1,5 +1,4 @@
-import { Avatar, ThemeIcon } from "@mantine/core";
-import { IconBrandApple } from "@tabler/icons-react";
+import { Avatar, Box, ThemeIcon } from "@mantine/core";
 
 type AppIconProps = {
   name: string;
@@ -15,8 +14,10 @@ export function AppIcon({ name, src, size = 56 }: AppIconProps) {
   }
 
   return (
-    <ThemeIcon size={size} radius={radius} color="teal" variant="light">
-      <IconBrandApple size={Math.round(size * 0.55)} stroke={1.8} />
+    <ThemeIcon size={size} radius={radius} className="app-icon-fallback" variant="filled">
+      <Box component="span" fz={Math.round(size * 0.36)} fw={800}>
+        {name.trim().charAt(0) || "G"}
+      </Box>
     </ThemeIcon>
   );
 }

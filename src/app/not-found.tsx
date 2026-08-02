@@ -4,9 +4,9 @@ export default function NotFound() {
   return (
     <Box component="main" className="page-section">
       <Container size="sm">
-        <Paper p="xl" className="soft-card">
+        <Paper p="xl" className="admin-panel">
           <Stack gap="md">
-            <Text c="teal" fw={800} size="sm">
+            <Text c="var(--gar-accent)" fw={800} size="sm">
               404
             </Text>
             <Title order={1}>ページが見つかりません</Title>

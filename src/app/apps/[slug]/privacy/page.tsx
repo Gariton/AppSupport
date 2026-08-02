@@ -31,7 +31,7 @@ export default async function PrivacyPage({
         <Stack gap="lg">
           <Group justify="space-between" align="flex-end" gap="md">
             <div>
-              <Badge color="teal" variant="light" leftSection={<IconFileText size={14} />}>
+              <Badge color="gariton" variant="light" leftSection={<IconFileText size={14} />}>
                 {app.name}
               </Badge>
               <Title order={1} mt="sm" size="clamp(2.2rem, 5vw, 4rem)" lh={1}>

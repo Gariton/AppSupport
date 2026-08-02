@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Noto_Sans_JP } from "next/font/google";
+import { M_PLUS_2 } from "next/font/google";
 import {
   Box,
   ColorSchemeScript,
@@ -14,7 +14,7 @@ import { getDict, getLocale } from "@/lib/i18n";
 
 const siteName = "Gariton Lab";
 
-const notoSans = Noto_Sans_JP({
+const mPlus = M_PLUS_2({
   subsets: ["latin"],
   weight: ["400", "600"],
   variable: "--font-gariton",
@@ -53,7 +53,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
-      <body className={notoSans.variable}>
+      <body className={mPlus.variable}>
         <MantineProvider theme={theme} defaultColorScheme="auto">
           <Box className="app-shell">
             <AppHeader

@@ -170,7 +170,7 @@ export function AppEditor({ app, action, editPath, policiesReady, alerts, formPa
           <Group p={26} gap="lg" wrap="nowrap">
             <AppIcon name={name || "G"} src={app.iconImageUrl} size={84} />
             <div style={{ minWidth: 0 }}>
-              <Text fz={21} fw={750} truncate>
+              <Text fz={21} fw={600} truncate>
                 {name || "（アプリ名）"}
               </Text>
               <Text size="sm" c="dimmed" mt={3} lineClamp={2}>
@@ -220,7 +220,7 @@ function PreviewMeta({ label, value }: { label: string; value: string }) {
       <Text ff="var(--gar-mono)" size="10px" c="dimmed">
         {label}
       </Text>
-      <Text size="sm" fw={650} mt={5}>
+      <Text size="sm" fw={600} mt={5}>
         {value}
       </Text>
     </Box>

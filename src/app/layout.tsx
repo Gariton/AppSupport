@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Schibsted_Grotesk, Zen_Kaku_Gothic_New } from "next/font/google";
+import { Noto_Sans_JP } from "next/font/google";
 import {
   Box,
   ColorSchemeScript,
@@ -14,22 +14,10 @@ import { getDict, getLocale } from "@/lib/i18n";
 
 const siteName = "Gariton Lab";
 
-const schibsted = Schibsted_Grotesk({
+const notoSans = Noto_Sans_JP({
   subsets: ["latin"],
-  variable: "--font-schibsted",
-  display: "swap"
-});
-
-const zenKaku = Zen_Kaku_Gothic_New({
-  subsets: ["latin"],
-  weight: ["400", "500", "700", "900"],
-  variable: "--font-zen-kaku",
-  display: "swap"
-});
-
-const jetBrains = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
+  weight: ["400", "600"],
+  variable: "--font-gariton",
   display: "swap"
 });
 
@@ -65,7 +53,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
-      <body className={`${schibsted.variable} ${zenKaku.variable} ${jetBrains.variable}`}>
+      <body className={notoSans.variable}>
         <MantineProvider theme={theme} defaultColorScheme="auto">
           <Box className="app-shell">
             <AppHeader

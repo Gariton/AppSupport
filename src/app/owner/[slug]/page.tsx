@@ -55,7 +55,7 @@ export default async function AdminPage({
       <div className="admin-main">
         <div className="admin-topline">
           <div>
-            <Text fw={650}>ダッシュボード</Text>
+            <Text fw={600}>ダッシュボード</Text>
             <Text size="xs" c="dimmed" ff="var(--gar-mono)">
               GARITON LAB CONSOLE
             </Text>
@@ -134,7 +134,7 @@ export default async function AdminPage({
                             <Group gap="sm" wrap="nowrap">
                               <AppIcon name={app.name} src={app.iconImageUrl} size={42} />
                               <div>
-                                <Text fw={700}>{app.name}</Text>
+                                <Text fw={600}>{app.name}</Text>
                                 <Anchor href={`/apps/${app.slug}`} c="var(--gar-accent)" size="sm">
                                   /apps/{app.slug}
                                 </Anchor>
@@ -256,7 +256,7 @@ export default async function AdminPage({
                           </Stack>
                         </TableTd>
                         <TableTd>
-                          <Text fw={700}>{contact.name}</Text>
+                          <Text fw={600}>{contact.name}</Text>
                           <Anchor href={`mailto:${contact.email}`} c="var(--gar-accent)" size="sm">
                             {contact.email}
                           </Anchor>
@@ -301,7 +301,7 @@ function AdminSidebar({ basePath }: { basePath: string }) {
           <circle cx="13" cy="7.3" r="1.7" fill="var(--gar-accent)" />
         </svg>
         <div>
-          <Text fw={650} size="sm" c="var(--gar-paper)">
+          <Text fw={600} size="sm" c="var(--gar-paper)">
             Gariton Lab
           </Text>
           <Text ff="var(--gar-mono)" size="10px" c="#6e6e72">
@@ -340,7 +340,7 @@ function MetricCard({ label, value, tag }: { label: string; value: number; tag: 
         {label}
       </Text>
       <Group align="baseline" gap="sm">
-        <Text fz={38} fw={750} lh={1}>
+        <Text fz={38} fw={600} lh={1}>
           {value}
         </Text>
         {tag && (

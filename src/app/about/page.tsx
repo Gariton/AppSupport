@@ -58,7 +58,7 @@ function ProfileRow({ label, value, href }: { label: string; value: string; href
   return (
     <Group justify="space-between" gap="lg" className="profile-row">
       <Text size="sm" c="dimmed">{label}</Text>
-      <Text component={href ? "a" : "span"} href={href} fw={650}>{value}</Text>
+      <Text component={href ? "a" : "span"} href={href} fw={600}>{value}</Text>
     </Group>
   );
 }

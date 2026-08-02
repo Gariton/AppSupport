@@ -41,7 +41,7 @@ export default async function LoginPage({
               <IconShieldLock size={32} stroke={1.8} />
             </ThemeIcon>
             <div>
-              <Text c="var(--gar-accent)" fw={800} size="sm">
+              <Text c="var(--gar-accent)" fw={600} size="sm">
                 Admin
               </Text>
               <Title order={1} size="clamp(2.4rem, 6vw, 4.5rem)" lh={1}>

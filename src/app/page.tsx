@@ -46,7 +46,7 @@ export default async function Home() {
                 <Text className="eyebrow" mb="md">
                   {item.n}
                 </Text>
-                <Text fw={650} mb={8}>
+                <Text fw={600} mb={8}>
                   {item.title}
                 </Text>
                 <Text size="sm" className="muted-copy">
@@ -173,7 +173,7 @@ export default async function Home() {
               <Group gap={48}>
                 <div>
                   <Text size="xs" c="dimmed" mb={6}>スタジオについて</Text>
-                  <Text component="a" href="/about" fw={700} td="underline" style={{ textDecorationColor: "var(--gar-accent)" }}>
+                  <Text component="a" href="/about" fw={600} td="underline" style={{ textDecorationColor: "var(--gar-accent)" }}>
                     About Gariton Lab
                   </Text>
                 </div>
@@ -181,7 +181,7 @@ export default async function Home() {
                   <Text size="xs" c="dimmed" mb={6}>
                     {t.baseLabel}
                   </Text>
-                  <Text fw={700}>{t.baseValue}</Text>
+                  <Text fw={600}>{t.baseValue}</Text>
                 </div>
               </Group>
             </Stack>
@@ -192,7 +192,7 @@ export default async function Home() {
       <Box component="footer" className="site-footer">
         <Container size="lg">
           <Group justify="space-between" gap="md">
-            <Text fw={650}>Gariton Lab</Text>
+            <Text fw={600}>Gariton Lab</Text>
             <Text size="xs" c="dimmed" ff="var(--gar-mono)">© {new Date().getFullYear()} GARITON LAB · JAPAN</Text>
           </Group>
         </Container>

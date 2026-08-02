@@ -6,7 +6,7 @@ export default function NotFound() {
       <Container size="sm">
         <Paper p="xl" className="admin-panel">
           <Stack gap="md">
-            <Text c="var(--gar-accent)" fw={800} size="sm">
+            <Text c="var(--gar-accent)" fw={600} size="sm">
               404
             </Text>
             <Title order={1}>ページが見つかりません</Title>

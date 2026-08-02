@@ -4,11 +4,11 @@ export const theme = createTheme({
   primaryColor: "gariton",
   defaultRadius: "md",
   fontFamily:
-    "var(--font-schibsted), var(--font-zen-kaku), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+    "var(--font-gariton), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
   headings: {
     fontFamily:
-      "var(--font-schibsted), var(--font-zen-kaku), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-    fontWeight: "650"
+      "var(--font-gariton), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+    fontWeight: "600"
   },
   colors: {
     gariton: [

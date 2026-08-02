@@ -116,7 +116,7 @@ export default async function AdminAppEditPage({
         <Group gap="md" align="flex-start">
           <IconPhoto size={22} color="var(--gar-soft)" />
           <div>
-            <Text fw={700}>スクリーンショットは未登録です</Text>
+            <Text fw={600}>スクリーンショットは未登録です</Text>
             <Text c="dimmed" size="sm" mt={4}>
               画像を登録すると、アプリ詳細ページに横スクロールのギャラリーが表示されます。
             </Text>
@@ -143,7 +143,7 @@ export default async function AdminAppEditPage({
           </Button>
           <Box w={1} h={22} bg="#e7e6e1" />
           <Group gap="sm">
-            <Text fw={650}>アプリを編集</Text>
+            <Text fw={600}>アプリを編集</Text>
             <span className="status-pill status-live">公開中</span>
           </Group>
         </Group>

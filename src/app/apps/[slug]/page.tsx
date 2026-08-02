@@ -157,7 +157,7 @@ export default async function AppSupportPage({ params }: { params: Promise<{ slu
                   {t.privacyPolicy} ({policy.locale.toUpperCase()})
                 </Button>
               ))}
-              <Anchor href={`mailto:${app.supportEmail}`} c="var(--gar-accent)" fw={700}>
+              <Anchor href={`mailto:${app.supportEmail}`} c="var(--gar-accent)" fw={600}>
                 {app.supportEmail}
               </Anchor>
             </Stack>

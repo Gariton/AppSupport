@@ -15,7 +15,7 @@ export function AppIcon({ name, src, size = 56 }: AppIconProps) {
 
   return (
     <ThemeIcon size={size} radius={radius} className="app-icon-fallback" variant="filled">
-      <Box component="span" fz={Math.round(size * 0.36)} fw={800}>
+      <Box component="span" fz={Math.round(size * 0.36)} fw={600}>
         {name.trim().charAt(0) || "G"}
       </Box>
     </ThemeIcon>

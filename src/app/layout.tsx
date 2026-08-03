@@ -49,11 +49,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const t = getDict(locale);
 
   return (
-    <html lang={locale} {...mantineHtmlProps}>
+    <html lang={locale} {...mantineHtmlProps} className={mPlus.variable}>
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
-      <body className={mPlus.variable}>
+      <body>
         <MantineProvider theme={theme} defaultColorScheme="auto">
           <Box className="app-shell">
             <AppHeader

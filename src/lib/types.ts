@@ -25,10 +25,12 @@ export type PolicyRecord = {
 
 export type ContactRecord = {
   id: string;
-  appId: string;
+  appId: string | null;
+  category: "app-support" | "bug-report" | "general";
   name: string;
   email: string;
   message: string;
+  emailStatus: "pending" | "sent" | "failed" | "not-configured";
   createdAt: string;
 };
 

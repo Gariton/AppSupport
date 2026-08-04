@@ -1,73 +1,53 @@
 "use client";
 
-import {
-  ActionIcon,
-  Anchor,
-  Box,
-  Button,
-  Container,
-  Group,
-  Text,
-  ThemeIcon,
-  useComputedColorScheme,
-  useMantineColorScheme
-} from "@mantine/core";
-import { IconApps, IconMail, IconMoon, IconShieldLock, IconSun } from "@tabler/icons-react";
+import { Anchor, Box, Container, Group, Text } from "@mantine/core";
 import { usePathname } from "next/navigation";
 
-export function AppHeader({ siteName }: { siteName: string }) {
+export type HeaderLabels = {
+  products: string;
+  about: string;
+  studio: string;
+  contact: string;
+  admin: string;
+};
+
+export function AppHeader({
+  siteName,
+  labels
+}: {
+  siteName: string;
+  locale: "ja" | "en";
+  labels: HeaderLabels;
+}) {
   const pathname = usePathname();
-  const { setColorScheme } = useMantineColorScheme();
-  const computedColorScheme = useComputedColorScheme("light", { getInitialValueInEffect: true });
-  const isAppsActive = pathname === "/" || pathname.startsWith("/apps");
+  const isProductsActive = pathname === "/products" || pathname.startsWith("/apps");
+  const isAboutActive = pathname.startsWith("/about");
   const isContactActive = pathname.startsWith("/contact");
-  const isDark = computedColorScheme === "dark";
 
   return (
     <Box component="header" className="topbar">
-      <Container size="lg" py="sm">
-        <Group justify="space-between" gap="md">
-          <Anchor href="/" underline="never" c="var(--mantine-color-text)">
-            <Group gap="sm">
-              <ThemeIcon variant="light" color="teal" size={34}>
-                <IconShieldLock size={20} stroke={1.8} />
-              </ThemeIcon>
-              <Text fw={800} size="lg">
-                {siteName}
-              </Text>
-            </Group>
-          </Anchor>
-          <Group gap="xs" wrap="nowrap">
-            <Group gap={6} component="nav" aria-label="Primary navigation">
-              <Button
-                component="a"
-                href="/"
-                variant={isAppsActive ? "light" : "subtle"}
-                color={isAppsActive ? "teal" : "gray"}
-                leftSection={<IconApps size={16} />}
-              >
-                Apps
-              </Button>
-              <Button
-                component="a"
-                href="/contact"
-                variant={isContactActive ? "light" : "subtle"}
-                color={isContactActive ? "teal" : "gray"}
-                leftSection={<IconMail size={16} />}
-              >
-                Contact
-              </Button>
-            </Group>
-            <ActionIcon
-              aria-label="Toggle color scheme"
-              variant="default"
-              size="lg"
-              onClick={() => setColorScheme(isDark ? "light" : "dark")}
-            >
-              {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
-            </ActionIcon>
+      <Container size="lg" className="topbar-inner">
+        <Anchor href="/" underline="never" c="var(--gar-ink)" className="brand-link" aria-label={siteName}>
+          <Group gap={11} wrap="nowrap">
+            <Text className="brand-wordmark">
+              Gariton <span>Lab</span>
+            </Text>
           </Group>
+        </Anchor>
+
+        <Group gap={34} component="nav" aria-label="Primary navigation" className="desktop-nav">
+          <Anchor href="/products" underline="never" className={isProductsActive ? "topnav-link is-active" : "topnav-link"}>
+            {labels.products}
+          </Anchor>
+          <Anchor href="/about" underline="never" className={isAboutActive ? "topnav-link is-active" : "topnav-link"}>
+            {labels.about}
+          </Anchor>
+          <Anchor href="/contact" underline="never" className={isContactActive ? "topnav-link is-active" : "topnav-link"}>
+            {labels.contact}
+          </Anchor>
         </Group>
+
+        <Text component="span" className="header-note">INDEPENDENT SOFTWARE STUDIO</Text>
       </Container>
     </Box>
   );

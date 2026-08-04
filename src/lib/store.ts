@@ -19,11 +19,9 @@ const imageMimeTypes: Record<string, string> = {
   "image/webp": "webp"
 };
 
-const emptyDb: Database = {
-  apps: [],
-  policies: [],
-  contacts: []
-};
+function createEmptyDb(): Database {
+  return { apps: [], policies: [], contacts: [] };
+}
 
 async function ensureDataDir() {
   await mkdir(dataDir, { recursive: true });
@@ -36,7 +34,7 @@ async function readDb(): Promise<Database> {
   await ensureDataDir();
   try {
     const raw = await readFile(dbPath, "utf8");
-    const db = { ...emptyDb, ...JSON.parse(raw) } as Database;
+    const db = { ...createEmptyDb(), ...JSON.parse(raw) } as Database;
     db.apps = db.apps.map((app) => ({
       ...app,
       iconImageUrl: app.iconImageUrl || "",
@@ -44,16 +42,22 @@ async function readDb(): Promise<Database> {
       supportedLanguages: normalizeSupportedLanguages(app.supportedLanguages || []),
       screenshots: Array.isArray(app.screenshots) ? app.screenshots.filter(Boolean) : []
     }));
+    db.contacts = (db.contacts || []).map((contact) => ({
+      ...contact,
+      appId: contact.appId || null,
+      category: contact.category || "app-support",
+      emailStatus: contact.emailStatus || "not-configured"
+    }));
     return db;
-  } catch {
-    await writeDb(emptyDb);
-    return emptyDb;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return createEmptyDb();
+    throw error;
   }
 }
 
 async function writeDb(db: Database) {
   await ensureDataDir();
-  const tmpPath = `${dbPath}.tmp`;
+  const tmpPath = `${dbPath}.${crypto.randomUUID()}.tmp`;
   await writeFile(tmpPath, JSON.stringify(db, null, 2), "utf8");
   await rename(tmpPath, dbPath);
 }
@@ -251,11 +255,21 @@ export async function readPolicyMarkdown(policy: PolicyRecord) {
 
 export async function saveContact(input: Omit<ContactRecord, "id" | "createdAt">) {
   const db = await readDb();
-  db.contacts.unshift({
+  const contact: ContactRecord = {
     id: crypto.randomUUID(),
     ...input,
     createdAt: new Date().toISOString()
-  });
+  };
+  db.contacts.unshift(contact);
+  await writeDb(db);
+  return contact;
+}
+
+export async function updateContactEmailStatus(id: string, emailStatus: ContactRecord["emailStatus"]) {
+  const db = await readDb();
+  const contact = db.contacts.find((item) => item.id === id);
+  if (!contact) return;
+  contact.emailStatus = emailStatus;
   await writeDb(db);
 }
 

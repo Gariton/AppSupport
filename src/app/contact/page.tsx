@@ -1,23 +1,11 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Container,
-  Group,
-  NativeSelect,
-  Paper,
-  SimpleGrid,
-  Stack,
-  Text,
-  TextInput,
-  Textarea,
-  ThemeIcon,
-  Title
-} from "@mantine/core";
-import { IconCheck, IconMail, IconMessageCircle, IconSend } from "@tabler/icons-react";
+import type { Metadata } from "next";
+import { Alert, Box, Container, Paper, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { IconCheck } from "@tabler/icons-react";
+import { ContactForm } from "@/components/ContactForm";
 import { listApps } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "お問い合わせ", description: "Gariton Labと公開アプリへのお問い合わせ。" };
 
 export default async function ContactPage({
   searchParams
@@ -30,24 +18,21 @@ export default async function ContactPage({
   return (
     <Box component="main" className="page-section">
       <Container size="lg">
-        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 44, md: 80 }}>
           <Stack gap="lg" justify="center">
-            <ThemeIcon size={54} color="teal" variant="light">
-              <IconMessageCircle size={30} stroke={1.8} />
-            </ThemeIcon>
             <div>
-              <Text c="teal" fw={800} size="sm">
+              <Text className="eyebrow" mb="md">
                 Contact
               </Text>
-              <Title order={1} size="clamp(2.4rem, 6vw, 4.4rem)" lh={1}>
+              <Title order={1} size="clamp(2.8rem, 7vw, 4.8rem)" lh={1.04} className="hero-title">
                 お問い合わせ
               </Title>
             </div>
-            <Text size="lg" c="dimmed" maw={620}>
-              対象アプリを選択して内容を送信してください。確認後、必要に応じて返信します。
+            <Text size="lg" maw={620} className="muted-copy">
+              公開アプリへのご質問、不具合のご報告、Gariton Labへのお問い合わせを受け付けています。受託開発のご依頼は承っていません。
             </Text>
             {sent === "1" && (
-              <Alert color="teal" variant="light" icon={<IconCheck size={18} />}>
+              <Alert color="gariton" variant="light" icon={<IconCheck size={18} />}>
                 お問い合わせを受け付けました。
               </Alert>
             )}
@@ -56,36 +41,12 @@ export default async function ContactPage({
                 入力内容を確認してください。
               </Alert>
             )}
+            {error === "rate" && <Alert color="orange" variant="light">短時間に複数回送信されています。しばらくしてからお試しください。</Alert>}
+            <Text size="sm" c="dimmed">メールでもお問い合わせいただけます：contact@gariton.site</Text>
           </Stack>
 
-          <Paper component="form" action="/contact/submit" method="post" p="xl" className="soft-card">
-            <Stack gap="md">
-              <NativeSelect
-                name="appId"
-                label="対象アプリ"
-                required
-                defaultValue={selectedAppId || ""}
-                data={[
-                  { label: "選択してください", value: "", disabled: true },
-                  ...apps.map((item) => ({ label: item.name, value: item.id }))
-                ]}
-              />
-              <TextInput name="name" label="お名前" autoComplete="name" required />
-              <TextInput
-                name="email"
-                label="メールアドレス"
-                type="email"
-                autoComplete="email"
-                required
-                leftSection={<IconMail size={16} />}
-              />
-              <Textarea name="message" label="内容" minRows={7} autosize required />
-              <Group justify="flex-end">
-                <Button type="submit" rightSection={<IconSend size={17} />}>
-                  送信
-                </Button>
-              </Group>
-            </Stack>
+          <Paper p={{ base: "lg", sm: "xl" }} className="soft-card">
+            <ContactForm apps={apps.map(({ id, name }) => ({ id, name }))} selectedAppId={selectedAppId} />
           </Paper>
         </SimpleGrid>
       </Container>

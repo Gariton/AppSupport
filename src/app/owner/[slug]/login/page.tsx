@@ -37,11 +37,11 @@ export default async function LoginPage({
       <Container size="lg">
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
           <Stack gap="lg" justify="center">
-            <ThemeIcon size={58} color="teal" variant="light">
+            <ThemeIcon size={58} color="gariton" variant="light">
               <IconShieldLock size={32} stroke={1.8} />
             </ThemeIcon>
             <div>
-              <Text c="teal" fw={800} size="sm">
+              <Text c="var(--gar-accent)" fw={600} size="sm">
                 Admin
               </Text>
               <Title order={1} size="clamp(2.4rem, 6vw, 4.5rem)" lh={1}>
@@ -62,7 +62,7 @@ export default async function LoginPage({
 async function LoginForm({ action, searchParams }: { action: string; searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   return (
-    <Paper component="form" action={action} method="post" p="xl" className="soft-card">
+    <Paper component="form" action={action} method="post" p="xl" className="admin-panel">
       <Stack gap="md">
         {error && (
           <Alert color="red" variant="light">

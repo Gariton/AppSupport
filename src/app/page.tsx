@@ -60,44 +60,37 @@ export default async function Home() {
 
       <Box component="section" className="feature-section">
         <Container size="lg">
-          <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 48, md: 80 }} verticalSpacing="xl">
-            <Stack justify="center" gap="lg">
-              <Text className="eyebrow">{t.featuredEyebrow}</Text>
-              {featuredApp ? (
-                <>
-                  <Group gap="md" wrap="nowrap">
-                    <AppIcon name={featuredApp.name} src={featuredApp.iconImageUrl} size={72} />
-                    <div>
-                      <Title order={2} size="h2">{featuredApp.name}</Title>
-                      <Text size="sm" c="dimmed" ff="var(--gar-mono)">iOS · Gariton Lab</Text>
-                    </div>
-                  </Group>
-                  <Box
-                    className="app-description app-detail-description"
-                    dangerouslySetInnerHTML={{ __html: markdownToHtml(featuredApp.description) }}
-                  />
-                  <Button
-                    component="a"
-                    href={`/apps/${featuredApp.slug}`}
-                    variant="subtle"
-                    color="dark"
-                    px={0}
-                    rightSection={<IconArrowRight size={17} color="var(--gar-accent)" />}
-                    w="fit-content"
-                  >
-                    プロダクト詳細とサポート
-                  </Button>
-                </>
-              ) : (
-                <Text className="muted-copy">現在、最初のプロダクトを準備しています。</Text>
-              )}
-            </Stack>
-            <div className="lab-index" aria-hidden="true">
-              <span>GARITON / 001</span>
-              <strong>Small tools,<br />carefully made.</strong>
-              <span>DESIGNED &amp; BUILT IN JAPAN</span>
-            </div>
-          </SimpleGrid>
+          <Stack justify="center" gap="lg" maw={760}>
+            <Text className="eyebrow">{t.featuredEyebrow}</Text>
+            {featuredApp ? (
+              <>
+                <Group gap="md" wrap="nowrap">
+                  <AppIcon name={featuredApp.name} src={featuredApp.iconImageUrl} size={72} />
+                  <div>
+                    <Title order={2} size="h2">{featuredApp.name}</Title>
+                    <Text size="sm" c="dimmed" ff="var(--gar-mono)">iOS · Gariton Lab</Text>
+                  </div>
+                </Group>
+                <Box
+                  className="app-description app-detail-description"
+                  dangerouslySetInnerHTML={{ __html: markdownToHtml(featuredApp.description) }}
+                />
+                <Button
+                  component="a"
+                  href={`/apps/${featuredApp.slug}`}
+                  variant="subtle"
+                  color="dark"
+                  px={0}
+                  rightSection={<IconArrowRight size={17} color="var(--gar-accent)" />}
+                  w="fit-content"
+                >
+                  プロダクト詳細とサポート
+                </Button>
+              </>
+            ) : (
+              <Text className="muted-copy">現在、最初のプロダクトを準備しています。</Text>
+            )}
+          </Stack>
         </Container>
       </Box>
 

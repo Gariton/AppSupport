@@ -1,12 +1,6 @@
-import { mkdir, readFile, rename, writeFile } from "fs/promises";
-import path from "path";
-import { AppRecord, ContactRecord, Database, PolicyRecord } from "./types";
+import { env } from "cloudflare:workers";
+import { AppRecord, ContactRecord, PolicyRecord } from "./types";
 
-const dataDir = process.env.DATA_DIR || path.join(process.cwd(), ".data");
-const dbPath = path.join(dataDir, "db.json");
-const policyDir = path.join(dataDir, "policies");
-const iconDir = path.join(dataDir, "icons");
-const screenshotDir = path.join(dataDir, "screenshots");
 const iconPublicPath = "/app-icons";
 const screenshotPublicPath = "/app-screenshots";
 const maxIconBytes = 2 * 1024 * 1024;
@@ -19,62 +13,106 @@ const imageMimeTypes: Record<string, string> = {
   "image/webp": "webp"
 };
 
-function createEmptyDb(): Database {
-  return { apps: [], policies: [], contacts: [] };
-}
+type AppRow = {
+  id: string;
+  name: string;
+  slug: string;
+  platform: "ios";
+  app_store_url: string;
+  support_email: string;
+  description: string;
+  has_in_app_purchases: number;
+  supported_languages: string;
+  icon_image_url: string;
+  screenshots: string;
+  created_at: string;
+  updated_at: string;
+};
 
-async function ensureDataDir() {
-  await mkdir(dataDir, { recursive: true });
-  await mkdir(policyDir, { recursive: true });
-  await mkdir(iconDir, { recursive: true });
-  await mkdir(screenshotDir, { recursive: true });
-}
+type PolicyRow = {
+  id: string;
+  app_id: string;
+  locale: string;
+  file_name: string;
+  title: string;
+  updated_at: string;
+};
 
-async function readDb(): Promise<Database> {
-  await ensureDataDir();
+type ContactRow = {
+  id: string;
+  app_id: string | null;
+  category: ContactRecord["category"];
+  name: string;
+  email: string;
+  message: string;
+  email_status: ContactRecord["emailStatus"];
+  created_at: string;
+};
+
+function parseStringArray(value: string) {
   try {
-    const raw = await readFile(dbPath, "utf8");
-    const db = { ...createEmptyDb(), ...JSON.parse(raw) } as Database;
-    db.apps = db.apps.map((app) => ({
-      ...app,
-      iconImageUrl: app.iconImageUrl || "",
-      hasInAppPurchases: Boolean(app.hasInAppPurchases),
-      supportedLanguages: normalizeSupportedLanguages(app.supportedLanguages || []),
-      screenshots: Array.isArray(app.screenshots) ? app.screenshots.filter(Boolean) : []
-    }));
-    db.contacts = (db.contacts || []).map((contact) => ({
-      ...contact,
-      appId: contact.appId || null,
-      category: contact.category || "app-support",
-      emailStatus: contact.emailStatus || "not-configured"
-    }));
-    return db;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return createEmptyDb();
-    throw error;
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
   }
 }
 
-async function writeDb(db: Database) {
-  await ensureDataDir();
-  const tmpPath = `${dbPath}.${crypto.randomUUID()}.tmp`;
-  await writeFile(tmpPath, JSON.stringify(db, null, 2), "utf8");
-  await rename(tmpPath, dbPath);
+function mapApp(row: AppRow): AppRecord {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    platform: "ios",
+    appStoreUrl: row.app_store_url,
+    supportEmail: row.support_email,
+    description: row.description,
+    hasInAppPurchases: Boolean(row.has_in_app_purchases),
+    supportedLanguages: parseStringArray(row.supported_languages),
+    iconImageUrl: row.icon_image_url,
+    screenshots: parseStringArray(row.screenshots),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+function mapPolicy(row: PolicyRow): PolicyRecord {
+  return {
+    id: row.id,
+    appId: row.app_id,
+    locale: row.locale,
+    fileName: row.file_name,
+    title: row.title,
+    updatedAt: row.updated_at
+  };
+}
+
+function mapContact(row: ContactRow): ContactRecord {
+  return {
+    id: row.id,
+    appId: row.app_id,
+    category: row.category,
+    name: row.name,
+    email: row.email,
+    message: row.message,
+    emailStatus: row.email_status,
+    createdAt: row.created_at
+  };
 }
 
 export async function listApps() {
-  const db = await readDb();
-  return db.apps.sort((a, b) => a.name.localeCompare(b.name));
+  const { results } = await env.DB.prepare("SELECT * FROM apps ORDER BY name COLLATE NOCASE").all<AppRow>();
+  return results.map(mapApp);
 }
 
 export async function getAppBySlug(slug: string) {
-  const db = await readDb();
-  return db.apps.find((app) => app.slug === slug) || null;
+  const row = await env.DB.prepare("SELECT * FROM apps WHERE slug = ? LIMIT 1").bind(slug).first<AppRow>();
+  return row ? mapApp(row) : null;
 }
 
 export async function getAppById(id: string) {
-  const db = await readDb();
-  return db.apps.find((app) => app.id === id) || null;
+  const row = await env.DB.prepare("SELECT * FROM apps WHERE id = ? LIMIT 1").bind(id).first<AppRow>();
+  return row ? mapApp(row) : null;
 }
 
 type SaveAppInput = Omit<AppRecord, "id" | "platform" | "createdAt" | "updatedAt" | "screenshots"> & {
@@ -82,51 +120,62 @@ type SaveAppInput = Omit<AppRecord, "id" | "platform" | "createdAt" | "updatedAt
 };
 
 export async function saveApp(input: SaveAppInput) {
-  const db = await readDb();
   const now = new Date().toISOString();
   const slug = normalizeSlug(input.slug);
-  const duplicate = db.apps.find((app) => app.slug === slug && app.id !== input.id);
+  const duplicate = await env.DB.prepare("SELECT id FROM apps WHERE slug = ? AND id != ? LIMIT 1")
+    .bind(slug, input.id || "")
+    .first<{ id: string }>();
   if (duplicate) {
     throw new Error("このスラッグは既に使われています。");
   }
 
   if (input.id) {
-    db.apps = db.apps.map((app) =>
-      app.id === input.id
-        ? {
-            ...app,
-            name: input.name,
-            slug,
-            platform: "ios",
-            appStoreUrl: input.appStoreUrl,
-            supportEmail: input.supportEmail,
-            description: input.description,
-            hasInAppPurchases: input.hasInAppPurchases,
-            supportedLanguages: normalizeSupportedLanguages(input.supportedLanguages),
-            iconImageUrl: input.iconImageUrl || app.iconImageUrl || "",
-            screenshots: app.screenshots || [],
-            updatedAt: now
-          }
-        : app
-    );
-  } else {
-    db.apps.push({
-      id: crypto.randomUUID(),
-      name: input.name,
-      slug,
-      platform: "ios",
-      appStoreUrl: input.appStoreUrl,
-      supportEmail: input.supportEmail,
-      description: input.description,
-      hasInAppPurchases: input.hasInAppPurchases,
-      supportedLanguages: normalizeSupportedLanguages(input.supportedLanguages),
-      iconImageUrl: input.iconImageUrl,
-      screenshots: [],
-      createdAt: now,
-      updatedAt: now
-    });
+    const result = await env.DB.prepare(
+      `UPDATE apps
+       SET name = ?, slug = ?, app_store_url = ?, support_email = ?, description = ?,
+           has_in_app_purchases = ?, supported_languages = ?,
+           icon_image_url = CASE WHEN ? = '' THEN icon_image_url ELSE ? END,
+           updated_at = ?
+       WHERE id = ?`
+    )
+      .bind(
+        input.name,
+        slug,
+        input.appStoreUrl,
+        input.supportEmail,
+        input.description,
+        input.hasInAppPurchases ? 1 : 0,
+        JSON.stringify(normalizeSupportedLanguages(input.supportedLanguages)),
+        input.iconImageUrl,
+        input.iconImageUrl,
+        now,
+        input.id
+      )
+      .run();
+    if (!result.meta.changes) throw new Error("アプリが見つかりません。");
+    return;
   }
-  await writeDb(db);
+
+  await env.DB.prepare(
+    `INSERT INTO apps (
+       id, name, slug, platform, app_store_url, support_email, description,
+       has_in_app_purchases, supported_languages, icon_image_url, screenshots, created_at, updated_at
+     ) VALUES (?, ?, ?, 'ios', ?, ?, ?, ?, ?, ?, '[]', ?, ?)`
+  )
+    .bind(
+      crypto.randomUUID(),
+      input.name,
+      slug,
+      input.appStoreUrl,
+      input.supportEmail,
+      input.description,
+      input.hasInAppPurchases ? 1 : 0,
+      JSON.stringify(normalizeSupportedLanguages(input.supportedLanguages)),
+      input.iconImageUrl,
+      now,
+      now
+    )
+    .run();
 }
 
 export async function saveAppIcon(file: File) {
@@ -140,30 +189,33 @@ export async function saveAppIcon(file: File) {
   }
 
   const fileName = `${crypto.randomUUID()}.${extension}`;
-  await writeFile(path.join(iconDir, fileName), Buffer.from(await file.arrayBuffer()));
+  await env.UPLOADS.put(`icons/${fileName}`, await file.arrayBuffer(), {
+    httpMetadata: { contentType: file.type }
+  });
   return `${iconPublicPath}/${fileName}`;
 }
 
 export async function saveAppScreenshots(appId: string, files: File[], options: { replace?: boolean } = {}) {
-  const db = await readDb();
-  const app = db.apps.find((item) => item.id === appId);
+  const app = await getAppById(appId);
   if (!app) {
     throw new Error("アプリが見つかりません。");
   }
 
   files.forEach(validateScreenshotImage);
   const imageUrls = await Promise.all(files.map(saveScreenshotImage));
-  app.screenshots = options.replace ? imageUrls : [...(app.screenshots || []), ...imageUrls];
-  app.updatedAt = new Date().toISOString();
-  await writeDb(db);
-
-  return app.screenshots;
+  const screenshots = options.replace ? imageUrls : [...app.screenshots, ...imageUrls];
+  await env.DB.prepare("UPDATE apps SET screenshots = ?, updated_at = ? WHERE id = ?")
+    .bind(JSON.stringify(screenshots), new Date().toISOString(), appId)
+    .run();
+  return screenshots;
 }
 
 async function saveScreenshotImage(file: File) {
   const extension = validateScreenshotImage(file);
   const fileName = `${crypto.randomUUID()}.${extension}`;
-  await writeFile(path.join(screenshotDir, fileName), Buffer.from(await file.arrayBuffer()));
+  await env.UPLOADS.put(`screenshots/${fileName}`, await file.arrayBuffer(), {
+    httpMetadata: { contentType: file.type }
+  });
   return `${screenshotPublicPath}/${fileName}`;
 }
 
@@ -181,44 +233,38 @@ function validateScreenshotImage(file: File) {
 }
 
 export async function readAppIcon(fileName: string) {
-  if (!/^[a-f0-9-]+\.(gif|jpe?g|png|webp)$/.test(fileName)) {
-    return null;
-  }
-
-  try {
-    return await readFile(path.join(iconDir, fileName));
-  } catch {
-    return null;
-  }
+  if (!isSafeImageFileName(fileName)) return null;
+  const object = await env.UPLOADS.get(`icons/${fileName}`);
+  return object ? object.arrayBuffer() : null;
 }
 
 export async function readAppScreenshot(fileName: string) {
-  if (!/^[a-f0-9-]+\.(gif|jpe?g|png|webp)$/.test(fileName)) {
-    return null;
-  }
+  if (!isSafeImageFileName(fileName)) return null;
+  const object = await env.UPLOADS.get(`screenshots/${fileName}`);
+  return object ? object.arrayBuffer() : null;
+}
 
-  try {
-    return await readFile(path.join(screenshotDir, fileName));
-  } catch {
-    return null;
-  }
+function isSafeImageFileName(fileName: string) {
+  return /^[a-f0-9-]+\.(gif|jpe?g|png|webp)$/.test(fileName);
 }
 
 export async function listPolicies(appId?: string) {
-  const db = await readDb();
-  return db.policies
-    .filter((policy) => !appId || policy.appId === appId)
-    .sort((a, b) => a.locale.localeCompare(b.locale));
+  const statement = appId
+    ? env.DB.prepare("SELECT * FROM policies WHERE app_id = ? ORDER BY locale").bind(appId)
+    : env.DB.prepare("SELECT * FROM policies ORDER BY locale");
+  const { results } = await statement.all<PolicyRow>();
+  return results.map(mapPolicy);
 }
 
 export async function getPolicy(appId: string, locale: string) {
-  const db = await readDb();
-  return db.policies.find((policy) => policy.appId === appId && policy.locale === locale) || null;
+  const row = await env.DB.prepare("SELECT * FROM policies WHERE app_id = ? AND locale = ? LIMIT 1")
+    .bind(appId, locale)
+    .first<PolicyRow>();
+  return row ? mapPolicy(row) : null;
 }
 
 export async function savePolicy(appId: string, locale: string, originalName: string, markdown: string) {
-  const db = await readDb();
-  const app = db.apps.find((item) => item.id === appId);
+  const app = await getAppById(appId);
   if (!app) {
     throw new Error("アプリが見つかりません。");
   }
@@ -226,56 +272,60 @@ export async function savePolicy(appId: string, locale: string, originalName: st
   const normalizedLocale = normalizeLocale(locale);
   const now = new Date().toISOString();
   const fileName = `${app.slug}-${normalizedLocale}.md`;
-  await writeFile(path.join(policyDir, fileName), markdown, "utf8");
-
   const title = extractMarkdownTitle(markdown) || `${app.name} Privacy Policy`;
-  const existing = db.policies.find((policy) => policy.appId === appId && policy.locale === normalizedLocale);
-  if (existing) {
-    existing.fileName = fileName;
-    existing.title = title;
-    existing.updatedAt = now;
-  } else {
-    db.policies.push({
-      id: crypto.randomUUID(),
-      appId,
-      locale: normalizedLocale,
-      fileName,
-      title,
-      updatedAt: now
-    });
-  }
-
-  await writeDb(db);
+  await env.UPLOADS.put(`policies/${fileName}`, markdown, {
+    httpMetadata: { contentType: "text/markdown; charset=utf-8" }
+  });
+  await env.DB.prepare(
+    `INSERT INTO policies (id, app_id, locale, file_name, title, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(app_id, locale) DO UPDATE SET
+       file_name = excluded.file_name,
+       title = excluded.title,
+       updated_at = excluded.updated_at`
+  )
+    .bind(crypto.randomUUID(), appId, normalizedLocale, fileName, title, now)
+    .run();
   return originalName;
 }
 
 export async function readPolicyMarkdown(policy: PolicyRecord) {
-  return readFile(path.join(policyDir, policy.fileName), "utf8");
+  const object = await env.UPLOADS.get(`policies/${policy.fileName}`);
+  if (!object) throw new Error("ポリシーファイルが見つかりません。");
+  return object.text();
 }
 
 export async function saveContact(input: Omit<ContactRecord, "id" | "createdAt">) {
-  const db = await readDb();
   const contact: ContactRecord = {
     id: crypto.randomUUID(),
     ...input,
     createdAt: new Date().toISOString()
   };
-  db.contacts.unshift(contact);
-  await writeDb(db);
+  await env.DB.prepare(
+    `INSERT INTO contacts (id, app_id, category, name, email, message, email_status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  )
+    .bind(
+      contact.id,
+      contact.appId,
+      contact.category,
+      contact.name,
+      contact.email,
+      contact.message,
+      contact.emailStatus,
+      contact.createdAt
+    )
+    .run();
   return contact;
 }
 
 export async function updateContactEmailStatus(id: string, emailStatus: ContactRecord["emailStatus"]) {
-  const db = await readDb();
-  const contact = db.contacts.find((item) => item.id === id);
-  if (!contact) return;
-  contact.emailStatus = emailStatus;
-  await writeDb(db);
+  await env.DB.prepare("UPDATE contacts SET email_status = ? WHERE id = ?").bind(emailStatus, id).run();
 }
 
 export async function listContacts() {
-  const db = await readDb();
-  return db.contacts;
+  const { results } = await env.DB.prepare("SELECT * FROM contacts ORDER BY created_at DESC").all<ContactRow>();
+  return results.map(mapContact);
 }
 
 export function normalizeSlug(value: string) {

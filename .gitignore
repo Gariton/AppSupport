@@ -31,3 +31,6 @@ pnpm-debug.log*
 # OS and local tooling
 .DS_Store
 /.codex
+/dist/
+.vinext/
+.wrangler/
